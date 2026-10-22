@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "Message",
+  "namespace": "model",
+  "doc": "Тестовое сообщение для проверки передачи через Kafka",
+  "fields": [
+    {"name": "id", "type": "string", "doc": "Уникальный идентификатор сообщения"},
+    {"name": "number", "type": "int", "doc": "Порядковый номер сообщения"},
+    {"name": "text", "type": "string", "doc": "Текст сообщения"},
+    {"name": "createdAt", "type": "long", "doc": "Время создания, timestamp"}
+  ]
+}

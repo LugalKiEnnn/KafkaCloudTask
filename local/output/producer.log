@@ -1,0 +1,190 @@
+[main] INFO Main - Инициализация продюсера kafka...
+[main] INFO org.apache.kafka.clients.producer.ProducerConfig - ProducerConfig values: 
+	acks = -1
+	auto.include.jmx.reporter = true
+	batch.size = 16384
+	bootstrap.servers = [localhost:9091, localhost:9092, localhost:9093]
+	buffer.memory = 33554432
+	client.dns.lookup = use_all_dns_ips
+	client.id = producer-1
+	compression.gzip.level = -1
+	compression.lz4.level = 9
+	compression.type = none
+	compression.zstd.level = 3
+	connections.max.idle.ms = 540000
+	delivery.timeout.ms = 120000
+	enable.idempotence = true
+	enable.metrics.push = true
+	interceptor.classes = []
+	key.serializer = class org.apache.kafka.common.serialization.StringSerializer
+	linger.ms = 0
+	max.block.ms = 60000
+	max.in.flight.requests.per.connection = 5
+	max.request.size = 1048576
+	metadata.max.age.ms = 300000
+	metadata.max.idle.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partitioner.adaptive.partitioning.enable = true
+	partitioner.availability.timeout.ms = 0
+	partitioner.class = null
+	partitioner.ignore.keys = false
+	receive.buffer.bytes = 32768
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 3
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = [hidden]
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = SCRAM-SHA-512
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = SASL_SSL
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = [hidden]
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = /mnt/w/study/module6/KafkaCloudTask/local/secrets/client/client.keystore.jks
+	ssl.keystore.password = [hidden]
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = /mnt/w/study/module6/KafkaCloudTask/local/secrets/client/client.truststore.jks
+	ssl.truststore.password = [hidden]
+	ssl.truststore.type = JKS
+	transaction.timeout.ms = 60000
+	transactional.id = null
+	value.serializer = class io.confluent.kafka.serializers.KafkaAvroSerializer
+
+[main] INFO org.apache.kafka.common.telemetry.internals.KafkaMetricsCollector - initializing Kafka metrics collector
+[main] INFO io.confluent.kafka.serializers.KafkaAvroSerializerConfig - KafkaAvroSerializerConfig values: 
+	auto.register.schemas = false
+	avro.reflection.allow.null = false
+	avro.remove.java.properties = false
+	avro.use.logical.type.converters = false
+	basic.auth.credentials.source = URL
+	basic.auth.user.info = [hidden]
+	bearer.auth.cache.expiry.buffer.seconds = 300
+	bearer.auth.client.id = null
+	bearer.auth.client.secret = null
+	bearer.auth.credentials.source = STATIC_TOKEN
+	bearer.auth.custom.provider.class = null
+	bearer.auth.identity.pool.id = null
+	bearer.auth.issuer.endpoint.url = null
+	bearer.auth.logical.cluster = null
+	bearer.auth.scope = null
+	bearer.auth.scope.claim.name = scope
+	bearer.auth.sub.claim.name = sub
+	bearer.auth.token = [hidden]
+	context.name.strategy = class io.confluent.kafka.serializers.context.NullContextNameStrategy
+	http.connect.timeout.ms = 60000
+	http.read.timeout.ms = 60000
+	id.compatibility.strict = true
+	key.subject.name.strategy = class io.confluent.kafka.serializers.subject.TopicNameStrategy
+	latest.cache.size = 1000
+	latest.cache.ttl.sec = -1
+	latest.compatibility.strict = true
+	max.schemas.per.subject = 1000
+	normalize.schemas = false
+	propagate.schema.tags = false
+	proxy.host = 
+	proxy.port = -1
+	rule.actions = []
+	rule.executors = []
+	rule.service.loader.enable = true
+	schema.format = null
+	schema.reflection = false
+	schema.registry.basic.auth.user.info = [hidden]
+	schema.registry.ssl.cipher.suites = null
+	schema.registry.ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	schema.registry.ssl.endpoint.identification.algorithm = https
+	schema.registry.ssl.engine.factory.class = null
+	schema.registry.ssl.key.password = null
+	schema.registry.ssl.keymanager.algorithm = SunX509
+	schema.registry.ssl.keystore.certificate.chain = null
+	schema.registry.ssl.keystore.key = null
+	schema.registry.ssl.keystore.location = null
+	schema.registry.ssl.keystore.password = null
+	schema.registry.ssl.keystore.type = JKS
+	schema.registry.ssl.protocol = TLSv1.3
+	schema.registry.ssl.provider = null
+	schema.registry.ssl.secure.random.implementation = null
+	schema.registry.ssl.trustmanager.algorithm = PKIX
+	schema.registry.ssl.truststore.certificates = null
+	schema.registry.ssl.truststore.location = null
+	schema.registry.ssl.truststore.password = null
+	schema.registry.ssl.truststore.type = JKS
+	schema.registry.url = [http://localhost:8081]
+	use.latest.version = true
+	use.latest.with.metadata = null
+	use.schema.id = -1
+	value.subject.name.strategy = class io.confluent.kafka.serializers.subject.TopicNameStrategy
+
+[main] INFO org.apache.kafka.clients.producer.KafkaProducer - [Producer clientId=producer-1] Instantiated an idempotent producer.
+[main] INFO org.apache.kafka.common.security.authenticator.AbstractLogin - Successfully logged in.
+[main] INFO org.apache.kafka.clients.producer.ProducerConfig - These configurations '[auto.register.schemas, schema.registry.url, use.latest.version]' were supplied but are not used yet.
+[main] INFO org.apache.kafka.common.utils.AppInfoParser - Kafka version: 3.9.0
+[main] INFO org.apache.kafka.common.utils.AppInfoParser - Kafka commitId: 84caaa6e9da06435
+[main] INFO org.apache.kafka.common.utils.AppInfoParser - Kafka startTimeMs: 1792700510027
+[main] INFO kafka.KafkaMessageProducer - Продюсер подключается к localhost:9091,localhost:9092,localhost:9093, топик practice-topic
+[kafka-producer-network-thread | producer-1] INFO org.apache.kafka.clients.Metadata - [Producer clientId=producer-1] Cluster ID: 5K39R8BxRGmOoYcnR04V2Q
+[kafka-producer-network-thread | producer-1] INFO org.apache.kafka.clients.producer.internals.TransactionManager - [Producer clientId=producer-1] ProducerId set to 4000 with epoch 0
+[main] INFO kafka.KafkaMessageProducer - Сообщение доставлено: key = d6466491-9a87-4464-a618-436f70095244, number = 1, topic = practice-topic, partition = 1, offset = 3
+[main] INFO kafka.KafkaMessageProducer - Сообщение доставлено: key = 00ce8b29-05b7-42d9-8d38-95f3bc4d651d, number = 2, topic = practice-topic, partition = 0, offset = 2
+[main] INFO kafka.KafkaMessageProducer - Сообщение доставлено: key = f78af389-e114-456e-a658-b62d095cb5be, number = 3, topic = practice-topic, partition = 1, offset = 4
+[main] INFO kafka.KafkaMessageProducer - Сообщение доставлено: key = a4234b6a-e984-435a-b0d9-d18e529589d9, number = 4, topic = practice-topic, partition = 0, offset = 3
+[main] INFO kafka.KafkaMessageProducer - Сообщение доставлено: key = 56d38e75-4ced-484b-9dae-9e2e86aec123, number = 5, topic = practice-topic, partition = 2, offset = 5
+[main] INFO kafka.KafkaMessageProducer - Сообщение доставлено: key = 75c338ef-0402-4191-b740-a68784c2b043, number = 6, topic = practice-topic, partition = 2, offset = 6
+[main] INFO kafka.KafkaMessageProducer - Сообщение доставлено: key = 6c5159c6-f361-407a-a3b1-ecf0b629f9fa, number = 7, topic = practice-topic, partition = 2, offset = 7
+[main] INFO kafka.KafkaMessageProducer - Сообщение доставлено: key = ece4e151-b8c3-43aa-b3af-3192b0898038, number = 8, topic = practice-topic, partition = 0, offset = 4
+[main] INFO kafka.KafkaMessageProducer - Сообщение доставлено: key = 1cc4c343-6245-4051-881a-bf280d69f8cd, number = 9, topic = practice-topic, partition = 1, offset = 5
+[main] INFO kafka.KafkaMessageProducer - Сообщение доставлено: key = ebfab1a3-4a43-4091-b4d8-c00537a3f28f, number = 10, topic = practice-topic, partition = 0, offset = 5
+[main] INFO kafka.KafkaMessageProducer - Отправлено сообщений: 10
+[main] INFO org.apache.kafka.clients.producer.KafkaProducer - [Producer clientId=producer-1] Closing the Kafka producer with timeoutMillis = 9223372036854775807 ms.
+[main] INFO org.apache.kafka.common.metrics.Metrics - Metrics scheduler closed
+[main] INFO org.apache.kafka.common.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+[main] INFO org.apache.kafka.common.metrics.Metrics - Closing reporter org.apache.kafka.common.telemetry.internals.ClientTelemetryReporter
+[main] INFO org.apache.kafka.common.metrics.Metrics - Metrics reporters closed
+[main] INFO org.apache.kafka.common.utils.AppInfoParser - App info kafka.producer for producer-1 unregistered
+[main] INFO kafka.KafkaMessageProducer - Продюсер остановлен
+[Thread-0] INFO Main - Выключение...

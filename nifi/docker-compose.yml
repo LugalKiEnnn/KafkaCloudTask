@@ -1,0 +1,33 @@
+services:
+  nifi:
+    build: .
+    container_name: nifi
+    ports:
+      - "8090:8080"
+    environment:
+      NIFI_WEB_HTTP_PORT: 8080
+      NIFI_SENSITIVE_PROPS_KEY: ${NIFI_SENSITIVE_PROPS_KEY}
+    volumes:
+      - ../local/secrets/nifi:/opt/nifi/secrets:ro
+    depends_on:
+      - postgres
+    networks:
+      - kafka-local
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - kafka-local
+
+networks:
+  kafka-local:
+    external: true

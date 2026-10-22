@@ -1,0 +1,12 @@
+# Пароли
+.env
+
+# Сертификаты и конфиги, создаваемые generate-certs.sh и create-truststore.sh
+secrets/
+
+# Сборка Maven
+target/
+
+# IntelliJ IDEA
+.idea/
+*.iml

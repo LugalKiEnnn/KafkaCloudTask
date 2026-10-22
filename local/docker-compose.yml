@@ -1,0 +1,263 @@
+x-kafka-common-env: &kafka-common-env
+  KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  KAFKA_ZOOKEEPER_SASL_CLIENT: "true"
+  KAFKA_ZOOKEEPER_SET_ACL: "true"
+
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SASL_SSL:SASL_SSL,SASL_SSL_EXTERNAL:SASL_SSL
+  KAFKA_INTER_BROKER_LISTENER_NAME: SASL_SSL
+  KAFKA_SASL_ENABLED_MECHANISMS: SCRAM-SHA-512
+  KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: SCRAM-SHA-512
+  KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/jaas/kafka_server_jaas.conf"
+
+  # SSL
+  KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+  KAFKA_SSL_CLIENT_AUTH: required
+  KAFKA_LISTENER_NAME_SASL__SSL_SSL_CLIENT_AUTH: required
+  KAFKA_LISTENER_NAME_SASL__SSL__EXTERNAL_SSL_CLIENT_AUTH: required
+
+  # Авторизация
+  KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+  KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "false"
+  KAFKA_SUPER_USERS: User:${ADMIN_USERNAME}
+
+  # Репликация
+  KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+  KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+  KAFKA_MIN_INSYNC_REPLICAS: 2
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+
+  # Хранение
+  KAFKA_LOG_CLEANUP_POLICY: delete
+  KAFKA_LOG_RETENTION_MS: 604800000
+  KAFKA_LOG_SEGMENT_BYTES: 1073741824
+
+x-kafka-broker: &kafka-broker
+  image: confluentinc/cp-kafka:7.7.1
+  restart: always
+  depends_on:
+    kafka-users:
+      condition: service_completed_successfully
+  networks:
+    - kafka-local
+
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.7.1
+    container_name: zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_REQUIRE_CLIENT_AUTH_SCHEME: "sasl"
+      ZOOKEEPER_AUTH_PROVIDER_1: "org.apache.zookeeper.server.auth.SASLAuthenticationProvider"
+      ZOOKEEPER_SASL_ENABLED: "true"
+      KAFKA_OPTS:
+        -Djava.security.auth.login.config=/etc/zookeeper/secrets/zookeeper.sasl.jaas.conf
+        -Dzookeeper.authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+        -Dzookeeper.allowSaslFailedClients=false
+        -DjaasLoginRenew=3600000
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/2181; echo srvr >&3; grep -q Mode <&3'"]
+      interval: 5s
+      timeout: 10s
+      retries: 12
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
+      - ./secrets/config/zookeeper.sasl.jaas.conf:/etc/zookeeper/secrets/zookeeper.sasl.jaas.conf:ro
+    networks:
+      - kafka-local
+
+  kafka-users:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: kafka-users
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/jaas/kafka_server_jaas.conf"
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      PRODUCER_USERNAME: ${PRODUCER_USERNAME}
+      PRODUCER_PASSWORD: ${PRODUCER_PASSWORD}
+      CONSUMER_USERNAME: ${CONSUMER_USERNAME}
+      CONSUMER_PASSWORD: ${CONSUMER_PASSWORD}
+      SCHEMA_REGISTRY_USERNAME: ${SCHEMA_REGISTRY_USERNAME}
+      SCHEMA_REGISTRY_PASSWORD: ${SCHEMA_REGISTRY_PASSWORD}
+      NIFI_USERNAME: ${NIFI_USERNAME}
+      NIFI_PASSWORD: ${NIFI_PASSWORD}
+    entrypoint: ["/bin/bash", "/scripts/create-users.sh"]
+    volumes:
+      - ./create-users.sh:/scripts/create-users.sh:ro
+      - ./secrets/config/kafka_server_jaas.conf:/etc/kafka/jaas/kafka_server_jaas.conf:ro
+    restart: "no"
+    networks:
+      - kafka-local
+
+  kafka-1:
+    <<: *kafka-broker
+    container_name: kafka-1
+    hostname: kafka-1
+    environment:
+      <<: *kafka-common-env
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENERS: SASL_SSL://0.0.0.0:19092,SASL_SSL_EXTERNAL://0.0.0.0:9091
+      KAFKA_ADVERTISED_LISTENERS: SASL_SSL://kafka-1:19092,SASL_SSL_EXTERNAL://localhost:9091
+      KAFKA_SSL_KEYSTORE_FILENAME: kafka-1.keystore.jks
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka-1_sslkey_creds
+      KAFKA_SSL_KEY_CREDENTIALS: kafka-1_sslkey_creds
+      KAFKA_SSL_TRUSTSTORE_FILENAME: kafka-1.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka-1_sslkey_creds
+    ports:
+      - "9091:9091"
+    volumes:
+      - kafka_1_data:/var/lib/kafka/data
+      - ./secrets/kafka-1:/etc/kafka/secrets:ro
+      - ./secrets/client:/etc/kafka/client:ro
+      - ./secrets/config:/etc/kafka/jaas:ro
+    healthcheck: &broker-healthcheck
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:19092 --command-config /etc/kafka/jaas/admin.properties > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 20s
+      retries: 12
+
+  kafka-2:
+    <<: *kafka-broker
+    container_name: kafka-2
+    hostname: kafka-2
+    environment:
+      <<: *kafka-common-env
+      KAFKA_BROKER_ID: 2
+      KAFKA_LISTENERS: SASL_SSL://0.0.0.0:19092,SASL_SSL_EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: SASL_SSL://kafka-2:19092,SASL_SSL_EXTERNAL://localhost:9092
+      KAFKA_SSL_KEYSTORE_FILENAME: kafka-2.keystore.jks
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka-2_sslkey_creds
+      KAFKA_SSL_KEY_CREDENTIALS: kafka-2_sslkey_creds
+      KAFKA_SSL_TRUSTSTORE_FILENAME: kafka-2.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka-2_sslkey_creds
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_2_data:/var/lib/kafka/data
+      - ./secrets/kafka-2:/etc/kafka/secrets:ro
+      - ./secrets/client:/etc/kafka/client:ro
+      - ./secrets/config:/etc/kafka/jaas:ro
+    healthcheck: *broker-healthcheck
+
+  kafka-3:
+    <<: *kafka-broker
+    container_name: kafka-3
+    hostname: kafka-3
+    environment:
+      <<: *kafka-common-env
+      KAFKA_BROKER_ID: 3
+      KAFKA_LISTENERS: SASL_SSL://0.0.0.0:19092,SASL_SSL_EXTERNAL://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: SASL_SSL://kafka-3:19092,SASL_SSL_EXTERNAL://localhost:9093
+      KAFKA_SSL_KEYSTORE_FILENAME: kafka-3.keystore.jks
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka-3_sslkey_creds
+      KAFKA_SSL_KEY_CREDENTIALS: kafka-3_sslkey_creds
+      KAFKA_SSL_TRUSTSTORE_FILENAME: kafka-3.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka-3_sslkey_creds
+    ports:
+      - "9093:9093"
+    volumes:
+      - kafka_3_data:/var/lib/kafka/data
+      - ./secrets/kafka-3:/etc/kafka/secrets:ro
+      - ./secrets/client:/etc/kafka/client:ro
+      - ./secrets/config:/etc/kafka/jaas:ro
+    healthcheck: *broker-healthcheck
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: kafka-init
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    environment:
+      KAFKA_TOPIC_NAME: ${KAFKA_TOPIC_NAME}
+      PRODUCER_USERNAME: ${PRODUCER_USERNAME}
+      CONSUMER_USERNAME: ${CONSUMER_USERNAME}
+      SCHEMA_REGISTRY_USERNAME: ${SCHEMA_REGISTRY_USERNAME}
+      NIFI_USERNAME: ${NIFI_USERNAME}
+    entrypoint: ["/bin/bash", "/scripts/init-topics-acl.sh"]
+    volumes:
+      - ./init-topics-acl.sh:/scripts/init-topics-acl.sh:ro
+      - ./secrets/client:/etc/kafka/client:ro
+      - ./secrets/config:/etc/kafka/jaas:ro
+    restart: "no"
+    networks:
+      - kafka-local
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.7.1
+    container_name: schema-registry
+    restart: always
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: SASL_SSL://kafka-1:19092,SASL_SSL://kafka-2:19092,SASL_SSL://kafka-3:19092
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: SASL_SSL
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: SCRAM-SHA-512
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.scram.ScramLoginModule required username="${SCHEMA_REGISTRY_USERNAME}" password="${SCHEMA_REGISTRY_PASSWORD}";'
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_LOCATION: /etc/schema-registry/secrets/schema-registry.keystore.jks
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_PASSWORD: ${CERT_PASSWORD}
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_KEY_PASSWORD: ${CERT_PASSWORD}
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_LOCATION: /etc/schema-registry/secrets/schema-registry.truststore.jks
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_PASSWORD: ${CERT_PASSWORD}
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC: schemas
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 3
+      SCHEMA_REGISTRY_SCHEMA_COMPATIBILITY_LEVEL: backward
+    volumes:
+      - ./secrets/schema-registry:/etc/schema-registry/secrets:ro
+    networks:
+      - kafka-local
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: kafka-ui
+    restart: always
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-practice
+      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka-1:19092,kafka-2:19092,kafka-3:19092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: SASL_SSL
+      KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM: SCRAM-SHA-512
+      KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.scram.ScramLoginModule required username="${ADMIN_USERNAME}" password="${ADMIN_PASSWORD}";'
+      KAFKA_CLUSTERS_0_PROPERTIES_SSL_TRUSTSTORE_LOCATION: /kafka-ui/kafka-ui.truststore.jks
+      KAFKA_CLUSTERS_0_PROPERTIES_SSL_TRUSTSTORE_PASSWORD: ${CERT_PASSWORD}
+      KAFKA_CLUSTERS_0_PROPERTIES_SSL_KEYSTORE_LOCATION: /kafka-ui/kafka-ui.keystore.jks
+      KAFKA_CLUSTERS_0_PROPERTIES_SSL_KEYSTORE_PASSWORD: ${CERT_PASSWORD}
+      KAFKA_CLUSTERS_0_PROPERTIES_SSL_KEY_PASSWORD: ${CERT_PASSWORD}
+    volumes:
+      - ./secrets/kafka-ui:/kafka-ui:ro
+    networks:
+      - kafka-local
+
+volumes:
+  zookeeper_data:
+  zookeeper_log:
+  kafka_1_data:
+  kafka_2_data:
+  kafka_3_data:
+
+networks:
+  kafka-local:
+    name: kafka-local
